@@ -1,0 +1,32 @@
+{
+  "name": "plano-mcp",
+  "version": "2.0.0",
+  "description": "Plano MCP Server - Full project management via MCP",
+  "type": "module",
+  "bin": {
+    "plano-mcp": "plano_mcp.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nopan-studio/plano_mcp.git"
+  },
+  "keywords": [
+    "mcp",
+    "mcp-server",
+    "plano",
+    "project-management",
+    "diagrams"
+  ],
+  "author": "nopan-studio",
+  "license": "GPL-3.0-only",
+  "scripts": {
+    "test": "node --version"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "zod": "^3.22.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
