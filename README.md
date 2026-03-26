@@ -47,7 +47,7 @@ Add the following to your `claude_desktop_config.json`:
 
 ## Architecture
 
-The MCP server acts as a bridge between the Model Context Protocol and the Plano PM backend API. If a local Plano server is not detected, it will attempt to start one automatically using `python run.py`.
+The MCP server acts as a bridge between the Model Context Protocol and the Plano PM backend API. It communicates with a running Plano server via HTTP.
 
 ## Development
 

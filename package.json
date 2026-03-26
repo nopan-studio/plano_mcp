@@ -6,6 +6,11 @@
   "bin": {
     "plano-mcp": "plano_mcp.js"
   },
+  "files": [
+    "plano_mcp.js",
+    "README.md",
+    "package.json"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nopan-studio/plano_mcp.git"

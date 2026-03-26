@@ -13,7 +13,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
-import { spawn, spawnSync } from "child_process";
+import { spawnSync } from "child_process";
 import { existsSync, statSync } from "fs";
 import { fileURLToPath } from "url";
 import { dirname, join, normalize } from "path";
@@ -23,71 +23,14 @@ import { dirname, join, normalize } from "path";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const PROJECT_DIR = __dirname;
-const DEFAULT_PORT = 5000;
+const DEFAULT_PORT = parseInt(process.env.PLANO_PORT || "5000", 10);
 const BASE_URL = `http://127.0.0.1:${DEFAULT_PORT}`;
-const HEALTH_URL = `${BASE_URL}/health`;
 const AUTH_TOKEN = process.env.PLANO_TOKEN || "plano_system_local_dev";
-
-// ─── Flask lifecycle helpers ─────────────────────────────────────────────────
-
-let _flaskProc = null;
-
-async function _isServerRunning() {
-  try {
-    const resp = await fetch(HEALTH_URL, { signal: AbortSignal.timeout(3000) });
-    const data = await resp.json();
-    return data?.status === "ok";
-  } catch {
-    return false;
-  }
-}
-
-function _findVenvPython() {
-  const isWin = process.platform === "win32";
-  const ext = isWin ? "Scripts/python.exe" : "bin/python";
-  const candidates = [
-    join(PROJECT_DIR, "venv", ext),
-    join(PROJECT_DIR, "..", "venv", ext),
-    join(PROJECT_DIR, ".venv", ext),
-    join(PROJECT_DIR, "..", ".venv", ext),
-  ];
-  for (const p of candidates) {
-    if (existsSync(p)) return p;
-  }
-  return "python3"; // fallback to system python
-}
-
-async function _ensureServer() {
-  if (await _isServerRunning()) return;
-
-  const python = _findVenvPython();
-  _flaskProc = spawn(python, ["run.py", "--port", String(DEFAULT_PORT)], {
-    cwd: PROJECT_DIR,
-    stdio: "ignore",
-  });
-
-  for (let i = 0; i < 30; i++) {
-    await new Promise((r) => setTimeout(r, 500));
-    if (await _isServerRunning()) return;
-  }
-  throw new Error(`Plano server failed to start on port ${DEFAULT_PORT} after 15s`);
-}
-
-function _shutdownServer() {
-  if (_flaskProc && !_flaskProc.killed) {
-    _flaskProc.kill("SIGTERM");
-    setTimeout(() => { if (!_flaskProc.killed) _flaskProc.kill("SIGKILL"); }, 5000);
-  }
-}
-
-process.on("exit", _shutdownServer);
-process.on("SIGINT", () => { _shutdownServer(); process.exit(0); });
-process.on("SIGTERM", () => { _shutdownServer(); process.exit(0); });
 
 // ─── HTTP helpers ────────────────────────────────────────────────────────────
 
 async function _api(method, path, body = null, toolName = null) {
-  await _ensureServer();
+
 
   const url = `${BASE_URL}${path}`;
   const opts = {
@@ -1031,7 +974,7 @@ server.tool(
   "Archive a single task and preserve its original status in metadata.",
   { project_id: z.number().int(), task_id: z.number().int() },
   async ({ project_id, task_id }) => {
-    await _ensureServer();
+
     const tRes = await _api("GET", `/api/projects/${project_id}/tasks/${task_id}`);
     if (tRes.error) return _ok(tRes);
 
